@@ -1,0 +1,32 @@
+version: '3'
+services:
+  vtigerdb:
+    image: mariadb:10.1
+    volumes:
+      - "./config/mariadb/local.cnf:/etc/mysql/conf.d/local.cnf"
+      - "./data/db:/var/lib/mysql"
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: vtiger
+      MYSQL_USER: vtiger_user
+      MYSQL_PASSWORD: password
+    command: 
+      mysqld --innodb-flush-method=littlesync --innodb-use-native-aio=OFF --log_bin=ON
+  vtigerweb:
+    build: .
+    volumes:
+      - "./web:/var/www/roothtml"
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - vtigerdb
+    environment:
+      DB_HOSTNAME: vtigerdb
+      DB_USERNAME: vtiger_user
+      DB_PASSWORD: password
+      DB_NAME: vtiger
+    privileged: true
